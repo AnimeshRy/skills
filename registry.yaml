@@ -1,0 +1,6 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/runkids/skillshare/main/schemas/registry.schema.json
+skills:
+  - name: expo-deployment
+    source: github.com/expo/skills/expo-deployment
+  - name: skillshare
+    source: github.com/runkids/skillshare/skills/skillshare
