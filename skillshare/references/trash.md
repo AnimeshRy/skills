@@ -1,6 +1,6 @@
 # Trash (Soft-Delete)
 
-`skillshare uninstall` moves skills to trash with 7-day retention instead of permanent deletion.
+`skillshare uninstall` moves skills and agents to trash with 7-day retention instead of permanent deletion.
 
 ## Commands
 
@@ -11,21 +11,30 @@ skillshare trash delete <name>           # Permanently delete one (alias: rm)
 skillshare trash empty                   # Permanently delete all (confirmation required)
 ```
 
+### Agent Trash
+
+```bash
+skillshare trash agents list             # List trashed agents
+skillshare trash agents restore <name>   # Restore agent to source
+skillshare trash agents delete <name>    # Permanently delete one agent
+skillshare trash agents empty            # Empty agent trash
+skillshare trash --all list              # List both skills and agents
+```
+
 ## Project Mode
 
 ```bash
 skillshare trash list -p                 # Project trash
 skillshare trash restore <name> -p       # Restore to project source
-skillshare trash delete <name> -p        # Delete from project trash
-skillshare trash empty -p                # Empty project trash
+skillshare trash agents list -p          # Project agent trash
 ```
 
-Auto-detects mode when `.skillshare/config.yaml` exists.
+Use `-p` or `-g` to select scope explicitly when both configurations exist.
 
 ## Behavior
 
 - **7-day TTL**: Items auto-expire after 7 days
-- **Restore**: Copies skill back to source directory; run `skillshare sync` afterward
+- **Restore**: Copies skill/agent back to source directory; run `skillshare sync` / `skillshare sync agents` afterward
 - **Empty**: Requires interactive confirmation (`y/yes`)
 - **List output**: Shows name, size, and age (minutes/hours/days)
 
@@ -33,9 +42,13 @@ Auto-detects mode when `.skillshare/config.yaml` exists.
 
 ```bash
 # Undo an accidental uninstall
-skillshare trash list                   # Find the skill
+skillshare trash list --no-tui          # Find the skill
 skillshare trash restore my-skill       # Restore it
 skillshare sync                         # Re-sync to targets
+
+# Undo an agent uninstall
+skillshare trash agents restore tutor   # Restore agent
+skillshare sync agents                  # Re-sync agents
 
 # Clean up
 skillshare trash delete old-skill       # Remove specific item

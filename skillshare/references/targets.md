@@ -1,6 +1,7 @@
 # Target Management
 
-Manage AI CLI tool targets (Claude, Cursor, Windsurf, Firebender, etc.). Skillshare supports 49+ built-in targets.
+Manage AI CLI tool targets (Claude, Cursor, Windsurf, Firebender, etc.). Use `skillshare target list --json` to inspect configured targets; avoid assuming skill
+and MCP client support are identical.
 
 ## Global Targets
 
@@ -8,8 +9,60 @@ Manage AI CLI tool targets (Claude, Cursor, Windsurf, Firebender, etc.). Skillsh
 skillshare target list                        # List all targets
 skillshare target claude                      # Show target info
 skillshare target add myapp ~/.myapp/skills   # Add custom target
+skillshare target add claude-work --agent claude --config-dir ~/.claude-work   # Another account of an Agent
 skillshare target remove myapp                # Remove target (safe)
 ```
+
+Another account (`agent` + `config_dir` in config.yaml): `--agent` accepts `claude`
+(`CLAUDE_CONFIG_DIR`), `codex` (`CODEX_HOME`) and `pi` (`PI_CODING_AGENT_DIR`). The skills
+path follows the directory (`<config_dir>/skills` for Codex and Pi, even though Codex also
+reads the shared `~/.agents/skills`); only Claude has an agents directory. Any number of
+accounts can be added, and the target name is also valid in `mcp.targets` and a server's
+`targets`.
+
+Instruction file of a custom target (`instructions` in config.yaml; `target add` has no
+flag for it, the dashboard sets it in the Custom target dialog or the target's file tab):
+
+```yaml
+targets:
+  myapp:
+    path: ~/.myapp/skills
+    instructions:
+      path: ~/.myapp/AGENTS.md   # global: absolute or ~/; project: relative to the root
+      import: true               # the tool follows @path lines
+```
+
+Other files a tool reads (`files` in config.yaml, dashboard only): each entry is relative
+to the tool's folder (`~/.pi/agent` for pi; `.pi` in a project) and gets its own tab.
+Pi and oh-my-pi already get `APPEND_SYSTEM.md`. Removing an entry never deletes the file.
+
+```yaml
+targets:
+  pi:
+    files: [SYSTEM.md, prompts/review.md]
+```
+
+## Skills Off
+
+For a tool that already reads another target's folder (Pi also reads `~/.agents/skills`
+of `universal`), stop syncing skills to it so it does not find each skill twice. Agents, MCP
+servers and instructions stay managed.
+
+```bash
+skillshare target pi --skills=false --dry-run   # Preview what is removed
+skillshare target pi --skills=false             # Save skills.enabled: false, remove links into the source
+skillshare target pi --skills=true              # Back on; next `skillshare sync` syncs again
+skillshare target add gemini ~/.gemini/skills --no-skills   # Add with skills off
+```
+
+Merge mode removes the links; symlink mode removes the folder link; copy mode keeps the
+copies and lists them apart (the tool still loads them; delete them to avoid duplicates);
+a folder an enabled target also writes to is left alone. `sync`/`diff`/`status`/`doctor`
+skip the target's skills. `--skills` cannot be combined with include/exclude flags in one
+command. Works with `-p`.
+
+When `sync` warns that two targets "sync skills to <folder> with different filters, so each
+sync undoes the other", run the `skillshare target <name> --skills=false` it prints.
 
 ## Project Targets (`-p`)
 
@@ -33,19 +86,41 @@ targets:
     mode: merge
 ```
 
+## Project Folders From the Global Config (`projects`)
+
+Use when projects should get **different** skills. Global targets already give every project the same set; project mode (`-p`) keeps the setup in the repo for teammates. For personal projects, list the folders in the global `config.yaml` instead of giving each a `.skillshare/`. One `skillshare sync` writes them all.
+
+```yaml
+projects:
+  ~/work/shop-web:
+    targets: [claude, cursor, codex]   # tools used there; paths are derived
+    skills: { mode: copy, include: ["frontend-*"] }   # present = on, empty = all
+    agents: {}
+```
+
+- Shows up in `sync`/`status`/`diff` as `<name>@<target>` (e.g. `shop-web@claude`). Tools sharing a folder (`.agents/skills`) are one target.
+- A missing folder is skipped with a warning, never recreated.
+- `skillshare target` and `collect` ignore these; edit `config.yaml` or the dashboard's Projects page.
+- MCP for the same folders lives under `mcp.projects` (see [mcp.md](mcp.md)).
+
 ## Target Filters
 
-Control which skills sync to each target using include/exclude glob patterns.
+Control which skills and agents sync to each target using include/exclude glob patterns.
 
 ```bash
-# Add filters
+# Add skill filters
 skillshare target claude --add-include "team-*"       # Only sync matching skills
 skillshare target claude --add-exclude "_legacy*"     # Skip matching skills
 skillshare target claude --add-include "team-*" -p    # Project target filter
 
+# Add agent filters
+skillshare target claude --add-agent-include "team-*"
+skillshare target claude --add-agent-exclude "draft-*"
+
 # Remove filters
 skillshare target claude --remove-include "team-*"
 skillshare target claude --remove-exclude "_legacy*"
+skillshare target claude --remove-agent-include "team-*"
 ```
 
 **Config format** with filters:
@@ -60,16 +135,17 @@ targets:
 
 **Pattern syntax:** `filepath.Match` globs — `*` matches any non-separator chars, `?` matches single char.
 
-**Precedence:** Include filters apply first (whitelist), then exclude filters remove from that set. No filters = all skills.
+**Precedence:** Include filters apply first (whitelist), then exclude filters remove from that set. No filters = all matching resources. Agent filters require a target with an agents path, and they are ignored in `symlink` mode.
 
 ## Skill-Level Targets
 
-Skills can declare which targets they should sync to via a `targets` frontmatter field in SKILL.md:
+Skills can declare which targets they should sync to via `metadata.targets` in SKILL.md. Top-level `targets` is still supported for older skills, but `metadata.targets` wins when both are present:
 
 ```yaml
 ---
 name: enterprise-skill
-targets: [claude, cursor]
+metadata:
+  targets: [claude, cursor]
 ---
 ```
 
@@ -104,4 +180,6 @@ Global and project modes use the **same short names** (e.g., `claude`, `cursor`,
 
 **Always use** `target remove` to unlink targets.
 
-**NEVER** `rm -rf` on symlinked targets — this deletes the source!
+Inspect whether a path is a symlink before filesystem operations. Removing a symlink
+itself and traversing its target are different operations; `target remove` handles the
+managed relationship without requiring manual recursive deletion.

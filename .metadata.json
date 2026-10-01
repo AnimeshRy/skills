@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "entries": {
+    "skillshare": {
+      "source": "github.com/runkids/skillshare/skills/skillshare",
+      "type": "github-subdir",
+      "installed_at": "2026-09-30T12:20:20.879689+05:30",
+      "repo_url": "https://github.com/runkids/skillshare.git",
+      "subdir": "skills/skillshare",
+      "version": "69963c6",
+      "tree_hash": "a17d7ad2a22ff505f9b3554a1fe7d33517685837",
+      "file_hashes": {
+        "SKILL.md": "sha256:68f987b521be5fadb20409b7699c4c50038028737c743927195c9d398459578b",
+        "references/TROUBLESHOOTING.md": "sha256:6103f13f7a364ca2ce8d71e7b9771ba64ab225942d49c6a60323f2f61ca862ae",
+        "references/audit.md": "sha256:890b84f79fb73cf704fe3cf9c2b0b87cdd3aa7ca1720cf6f08e19d5720a3506e",
+        "references/backup.md": "sha256:670f56cc07d76ba5b3556bf303fdcfe5c019bc4131a6606fc22266cdf8b4604a",
+        "references/extras.md": "sha256:97fc74aa76718427b63b05ac8883d76f2411bfd593af1b2e8038fb6b4744cfc2",
+        "references/init.md": "sha256:ac99a757d7e9a077e4ff8d0fe3009a5b93167f0843e8a000fc89a03e24fa2d82",
+        "references/install.md": "sha256:ca17b0024d4cc3e681a24723fd3c6161b1fc4d6a72ae048444e4e04b69e041b9",
+        "references/log.md": "sha256:f726e59328ac1cb367cd7d5eaa257149d7f56ef5c650d9e0f9c7a091c0f9c442",
+        "references/mcp.md": "sha256:8db678665d3554573d30d516e159d8c38cd21afee98f89f099733071f270ff9e",
+        "references/native-agents.md": "sha256:352d78cb64722717b5660655978afcef3d18638669ab96e0f2325f28d563576e",
+        "references/plugins.md": "sha256:ee9eab630991e32a254e00d6fa91d58fbe8e4f8a43b8814d25ff761c9cd3fb29",
+        "references/status.md": "sha256:37b652ccf40cfdfd66cbe9795a57eb2ffc21dea2e9cf02cc95b819c97a61b858",
+        "references/sync.md": "sha256:c2da22e0a415c4f3046550aa70ae1ecff6f24b14e73e1ae0f680bbef5d9678c1",
+        "references/targets.md": "sha256:854486c0f7cc1a7d938b18fa59550128074ba28f79be421881ba3f54e1f6ca08",
+        "references/trash.md": "sha256:9ffc23f6440e20bd1405b17f6124efdb1ad457b998fd2adf8352192916a5c5db",
+        "scripts/run.sh": "sha256:e434ebdb7d3ae0b37c00ddc36687bc975da9e766b8cb863f9aed9a624ebbdfa9"
+      }
+    }
+  }
+}
