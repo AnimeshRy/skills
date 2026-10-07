@@ -1,0 +1,250 @@
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: sticky chapter map on the left, overview then chapters on the right; one column on phones.
+   Palette follows Claude Code: warm neutrals, Claude orange accent, its diff greens and reds. */
+:root {
+  --bg: #faf9f5; --panel: #ffffff; --soft: #f2f0e8; --line: #e4e1d7; --ink: #1f1e1c; --muted: #6f6d66;
+  --accent: #d97757; --accent-ink: #b5573a; --link: #4f5fd6;
+  --add: #2c7a39; --addbg: #e5f3e7; --chg: #966c1e; --chgbg: #f8efd9; --del: #ab2b3f; --delbg: #fbe6e9;
+  --sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1c1b1a; --panel: #252422; --soft: #2f2e2b; --line: #3b3a36; --ink: #ebe8df; --muted: #9c9a92;
+    --accent: #d97757; --accent-ink: #e58b6c; --link: #b1b9f9;
+    --add: #4eba65; --addbg: #1f3a26; --chg: #e6b450; --chgbg: #3a3020; --del: #ff6b80; --delbg: #45222a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1c1b1a; --panel: #252422; --soft: #2f2e2b; --line: #3b3a36; --ink: #ebe8df; --muted: #9c9a92;
+  --accent: #d97757; --accent-ink: #e58b6c; --link: #b1b9f9;
+  --add: #4eba65; --addbg: #1f3a26; --chg: #e6b450; --chgbg: #3a3020; --del: #ff6b80; --delbg: #45222a;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.6 var(--sans); }
+code { font: 0.85em var(--mono); background: var(--soft); color: var(--accent-ink); padding: 0.1em 0.35em; border-radius: 4px; }
+a { color: var(--link); }
+a:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+i.a, i.d { font: 500 12px/1 var(--mono); font-style: normal; padding: 2px 5px; border-radius: 4px; font-variant-numeric: tabular-nums; }
+i.a { color: var(--add); background: var(--addbg); }
+i.d { color: var(--del); background: var(--delbg); }
+.eyebrow { font: 500 12px/1 var(--mono); color: var(--muted); }
+
+.wrap { max-width: 1200px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 72px;
+  display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 44px; }
+@media (max-width: 880px) { .wrap { grid-template-columns: minmax(0, 1fr); gap: 24px; } }
+
+aside { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 20px); align-self: start;
+  max-height: calc(100vh - 40px); overflow-y: auto; display: grid; gap: 4px; }
+@media (max-width: 880px) { aside { position: static; max-height: none; } }
+.progress { display: flex; justify-content: space-between; align-items: baseline; padding: 0 10px 8px; }
+.progress b { font: 500 12px var(--mono); font-variant-numeric: tabular-nums; }
+.m { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 2px 6px; padding: 8px 10px;
+  border-radius: 8px; text-decoration: none; color: var(--ink); }
+.m:hover { background: var(--soft); }
+.m .num { font: 500 12px/1.7 var(--mono); color: var(--accent); }
+.m .t { font-weight: 500; font-size: 13.5px; line-height: 1.4; }
+.m ul { grid-column: 2; list-style: none; margin: 3px 0 0; padding: 0; display: grid; gap: 1px; }
+.m li { font: 11.5px/1.5 var(--mono); color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.m li.more { color: var(--accent-ink); }
+.m.is-done .t, .m.is-done li { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line); }
+.m.is-done .num { color: var(--add); }
+.m.is-done .num::before { content: "✓"; }
+.m.is-done .num span { display: none; }
+
+main { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 48px; }
+.top, .ch { grid-template-columns: minmax(0, 1fr); }
+.top { display: grid; gap: 12px; }
+.top .eyebrow { color: var(--accent); }
+.top h1 { font-size: clamp(25px, 3.2vw, 34px); font-weight: 600; line-height: 1.15; margin: 0; letter-spacing: -0.02em; text-wrap: balance; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; color: var(--muted); font: 12.5px/1.6 var(--mono); }
+.meta code { color: var(--muted); }
+.pr { font: 500 12.5px var(--sans); text-decoration: none; color: var(--ink); border: 1px solid var(--line);
+  background: var(--panel); padding: 4px 10px; border-radius: 6px; }
+.pr:hover { border-color: var(--accent); }
+.ctx { font-size: 17px; line-height: 1.55; margin: 4px 0 0; max-width: 66ch; }
+.changes { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; max-width: 72ch; }
+.changes li { position: relative; padding-left: 18px; }
+.changes li::before { content: "⏺"; position: absolute; left: 0; top: 0.55em; color: var(--accent); font-size: 9px; line-height: 1; }
+
+.ba { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; margin-top: 8px; }
+.pane { margin: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px 16px; min-width: 0; }
+.pane.wide, .ba.stack .pane { grid-column: 1 / -1; }
+.ch > .ba { margin-top: 0; }
+.pane figcaption { font: 500 12px/1 var(--mono); color: var(--muted); margin-bottom: 10px; }
+.diagram { overflow-x: auto; min-height: 40px; }
+.diagram svg { display: block; margin: 0 auto; max-width: none !important; height: auto; }
+.diagram svg .node rect { rx: 7px; ry: 7px; }
+.diagram svg .edgeLabel, .diagram svg .edgeLabel p { font-size: 11.5px; color: var(--muted); background: var(--panel); }
+.diagram pre.src { font: 12px/1.5 var(--mono); color: var(--muted); margin: 0; white-space: pre; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 2px 0 0; font: 12px var(--mono); color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.lg { width: 14px; height: 10px; border-radius: 3px; border: 1.5px solid; display: inline-block; }
+.lg.add { border-color: var(--add); background: var(--addbg); }
+.lg.chg { border-color: var(--chg); background: var(--chgbg); }
+.lg.del { border-color: var(--del); background: var(--delbg); border-style: dashed; }
+
+.ch { display: grid; gap: 14px; scroll-margin-top: 20px; padding-top: 28px; border-top: 1px solid var(--line); }
+.ch header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.ch .num { font: 500 13px var(--mono); color: var(--accent); }
+.ch h2 { margin: 0; font-size: 20px; font-weight: 600; line-height: 1.3; letter-spacing: -0.01em; text-wrap: balance; flex: 1 1 260px; min-width: 0; }
+.kind { font: 500 11.5px/1 var(--mono); color: var(--muted); background: var(--soft); border-radius: 999px; padding: 5px 10px; }
+.done { display: inline-flex; gap: 7px; align-items: center; font: 500 12.5px var(--mono); color: var(--muted); cursor: pointer; user-select: none;
+  border: 1px solid var(--line); border-radius: 6px; padding: 4px 9px; background: var(--panel); }
+.done:hover { border-color: var(--add); }
+.done input { accent-color: var(--add); width: 14px; height: 14px; margin: 0; }
+.ch.is-done .done { color: var(--add); border-color: var(--add); }
+.ch.is-done h2, .ch.is-done .sum { color: var(--muted); }
+.sum { margin: 0; max-width: 70ch; }
+.ch > .dia { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+.look { margin: 0; display: flex; gap: 10px; align-items: baseline; font-size: 14px; max-width: 72ch;
+  background: var(--chgbg); border-radius: 8px; padding: 9px 12px; }
+.look b { flex: none; font: 600 11.5px/1 var(--mono); color: var(--chg); }
+.look span { min-width: 0; }
+
+.files { border: 1px solid var(--line); border-radius: 12px; background: var(--panel); overflow: hidden; }
+.files-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 9px 14px; background: var(--soft);
+  font: 12px var(--mono); color: var(--muted); }
+.files ul { list-style: none; margin: 0; padding: 0; }
+.files li { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 10px 14px; border-top: 1px solid var(--line); }
+.n { display: inline-flex; gap: 4px; white-space: nowrap; font: 12px/1.6 var(--mono); color: var(--muted); }
+.st { font: 600 11px/20px var(--mono); text-align: center; border-radius: 4px; height: 20px; }
+.st-A { color: var(--add); background: var(--addbg); } .st-M { color: var(--chg); background: var(--chgbg); }
+.st-D { color: var(--del); background: var(--delbg); } .st-R, .st-C { color: var(--link); background: var(--soft); }
+.path { min-width: 0; font: 13px/1.6 var(--mono); overflow-wrap: anywhere; }
+.path a { text-decoration: none; color: inherit; }
+.path a:hover b { color: var(--link); text-decoration: underline; }
+.path .dir { color: var(--muted); }
+.path b { font-weight: 500; }
+.files li.also { background: var(--soft); }
+.files li.also .st { color: var(--muted); }
+.from, .note { display: block; font: 13.5px/1.5 var(--sans); color: var(--muted); margin-top: 2px; }
+
+.skip { color: var(--muted); font: 12.5px var(--mono); border-top: 1px solid var(--line); padding-top: 20px; }
+.skip summary { cursor: pointer; }
+.skip ul { line-height: 1.8; padding-left: 20px; overflow-wrap: anywhere; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+
+<div class="wrap">
+  <aside>
+    <div class="progress"><span class="eyebrow">Chapters</span><b><span id="done-count">0</span>/{{total}} reviewed</b></div>
+    <a class="m" href="#overview"><span class="num"><span>00</span></span><span class="t">Overview</span></a>
+    {{map}}
+  </aside>
+  <main>
+    <section class="top" id="overview">
+      <span class="eyebrow">✻ guided review</span>
+      <h1>{{title}}</h1>
+      <div class="meta"><span>{{meta}}</span>{{pr}}</div>
+      <p class="ctx">{{context}}</p>
+      {{changes}}
+      {{panes}}
+    </section>
+    {{chapters}}
+    {{skipped}}
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.15.0/mermaid.min.js"></script>
+<script>
+(() => {
+  const key = "guided-review:{{range}}";
+  let state = {};
+  try { state = JSON.parse(localStorage.getItem(key)) || {}; } catch (e) {}
+  const boxes = [...document.querySelectorAll("[data-ch]")];
+  const paint = () => {
+    boxes.forEach((cb) => {
+      const id = cb.dataset.ch;
+      document.getElementById("c" + id).classList.toggle("is-done", cb.checked);
+      document.querySelector(`[data-map="${id}"]`).classList.toggle("is-done", cb.checked);
+    });
+    document.getElementById("done-count").textContent = boxes.filter((cb) => cb.checked).length;
+  };
+  boxes.forEach((cb) => {
+    cb.checked = !!state[cb.dataset.ch];
+    cb.addEventListener("change", () => {
+      state[cb.dataset.ch] = cb.checked;
+      try { localStorage.setItem(key, JSON.stringify(state)); } catch (e) {}
+      paint();
+    });
+  });
+  paint();
+})();
+
+(() => {
+  const diagrams = [...document.querySelectorAll(".diagram")];
+  const showSource = (el) => {
+    const pre = document.createElement("pre");
+    pre.className = "src";
+    pre.textContent = el.dataset.src;
+    el.replaceChildren(pre);
+  };
+  if (!window.mermaid) { diagrams.forEach(showSource); return; }
+  let run = 0;
+  const draw = async () => {
+    const id = ++run;
+    const css = getComputedStyle(document.documentElement);
+    const t = (name) => css.getPropertyValue("--" + name).trim();
+    mermaid.initialize({
+      startOnLoad: false, securityLevel: "strict", theme: "base", suppressErrorRendering: true,
+      fontFamily: '"Geist Mono", ui-monospace, Menlo, monospace',
+      themeVariables: {
+        fontSize: "12px", background: t("panel"), primaryColor: t("soft"), primaryTextColor: t("ink"),
+        primaryBorderColor: t("line"), secondaryColor: t("soft"), tertiaryColor: t("panel"), lineColor: t("muted"),
+        textColor: t("ink"), edgeLabelBackground: t("panel"), clusterBkg: t("bg"), clusterBorder: t("line"),
+      },
+      flowchart: { useMaxWidth: false, curve: "basis", nodeSpacing: 30, rankSpacing: 44, padding: 10, htmlLabels: true },
+    });
+    // Change classes take their colours from the current theme, so they are added at render time.
+    const classes = [
+      `classDef add fill:${t("addbg")},stroke:${t("add")},stroke-width:1.5px`,
+      `classDef chg fill:${t("chgbg")},stroke:${t("chg")},stroke-width:1.5px`,
+      `classDef del fill:${t("delbg")},stroke:${t("del")},stroke-width:1.5px,stroke-dasharray:4 3`,
+    ].map((line) => "\n  " + line).join("");
+    for (const [i, el] of diagrams.entries()) {
+      let src = el.dataset.src;
+      if (/^\s*(flowchart|graph)\b/.test(src)) src = src.replace(/^.*$/m, (first) => first + classes);
+      try {
+        const { svg } = await mermaid.render(`gr-${id}-${i}`, src);
+        if (id !== run) return;
+        el.innerHTML = svg;
+      } catch (e) {
+        showSource(el);
+      }
+    }
+    layout();
+  };
+  const naturalWidth = (el) => {
+    const svg = el.querySelector("svg");
+    return svg && svg.viewBox.baseVal ? svg.viewBox.baseVal.width : 0;
+  };
+  const layout = () => {
+    // Side-by-side panes crop wide diagrams; stack them instead.
+    document.querySelectorAll(".ba").forEach((ba) => {
+      ba.classList.remove("stack");
+      const cramped = [...ba.querySelectorAll(".diagram")].some((el) => naturalWidth(el) > el.clientWidth);
+      ba.classList.toggle("stack", cramped);
+    });
+    // Shrink slightly-too-wide diagrams to fit; much wider ones scroll instead.
+    diagrams.forEach((el) => {
+      const svg = el.querySelector("svg");
+      if (!svg) return;
+      svg.style.width = "";
+      const width = naturalWidth(el);
+      if (width > el.clientWidth && width <= el.clientWidth * 1.4) svg.style.width = "100%";
+    });
+  };
+  let resizeTimer;
+  addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(layout, 150); });
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(draw);
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", draw);
+  new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+})();
+</script>
