@@ -1,0 +1,27 @@
+guided-review/SKILL.md
+  s_44e469e12dc858::t_079b9dd7aec3dd 1-160
+guided-review/agents/guided-review.md
+  s_44e469e12dc858::t_a06a117b869ce5 1-12
+guided-review/guide.py
+  s_44e469e12dc858::t_36a6610068cb25 1-468
+guided-review/template.html
+  s_44e469e12dc858::t_74fe94149829c8 1-250
+guided-review/README.md
+  s_44e469e12dc858::t_b152764dac07c1 1-94
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2b2ec0e439cab481d3d5cecafd3b222ca8e1e488",
+  "prompts": {},
+  "sessions": {
+    "s_44e469e12dc858": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e08b6ffe-0f08-4907-8e3c-818391702ab4",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "AnimeshRy <ani16september@gmail.com>"
+    }
+  }
+}
