@@ -26,28 +26,39 @@ are green, changed parts amber, and removed parts red.
 You need Claude Code, `git` and `python3` (standard library only). Tested on Claude
 Code 2.1.292.
 
-The skill runs in its own lightweight agent (`agents/guided-review.md`). That keeps
-the diff out of your main conversation and runs on Sonnet. Install both the skill
-and the agent.
-
-### With skillshare
-
 ```sh
-skillshare install github.com/AnimeshRy/skills --skill guided-review
-skillshare sync
-ln -s ~/.config/skillshare/skills/guided-review/agents/guided-review.md ~/.claude/agents/guided-review.md
+npx skills add AnimeshRy/skills --skill guided-review -g -a claude-code
 ```
 
-### By hand
+Then start a new Claude Code session so it picks up the skill.
+
+The skill runs in its own background agent on Sonnet, so the diff stays out of your
+main conversation. The optional agent file in `agents/` also limits that agent to the
+four tools it needs (Bash, Read, Write, Artifact). To add it:
 
 ```sh
-git clone --depth 1 https://github.com/AnimeshRy/skills /tmp/animeshry-skills
-cp -r /tmp/animeshry-skills/guided-review ~/.claude/skills/
 mkdir -p ~/.claude/agents
 cp ~/.claude/skills/guided-review/agents/guided-review.md ~/.claude/agents/
 ```
 
-Restart Claude Code, or start a new session, so it picks up the skill and the agent.
+<details>
+<summary>Other ways to install</summary>
+
+With [skillshare](https://github.com/runkids/skillshare):
+
+```sh
+skillshare install github.com/AnimeshRy/skills --skill guided-review
+skillshare sync
+```
+
+By hand:
+
+```sh
+git clone --depth 1 https://github.com/AnimeshRy/skills /tmp/animeshry-skills
+cp -r /tmp/animeshry-skills/guided-review ~/.claude/skills/
+```
+
+</details>
 
 ## Use
 

@@ -4,6 +4,8 @@ description: Build a visual, chaptered walkthrough of a branch or pull request d
 argument-hint: "[base] [head] [pr-url]"
 context: fork
 agent: guided-review
+model: sonnet
+effort: medium
 ---
 
 # Guided review
